@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+
+    <!--配置读取-->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置数据源 -->
+    <bean name="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="url" value="${jdbc_url}" />
+        <property name="username" value="${jdbc_username}" />
+        <property name="password" value="${jdbc_password}" />
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc.pool.initialPoolSize}" />
+        <!-- 连接池最大使用连接数量 -->
+        <property name="maxActive" value="${jdbc.pool.maxActive}" />
+        <!-- 连接池最大空闲 -->
+        <!-- <property name="maxIdle" value="20" /> -->
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc.pool.minPoolSize}" />
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc.pool.maxWait}" />
+        <!-- <property name="poolPreparedStatements" value="true" /> <property
+            name="maxPoolPreparedStatementPerConnectionSize" value="33" /> -->
+        <property name="validationQuery" value="${validationQuery}" />
+        <property name="testOnBorrow" value="false" />
+        <property name="testOnReturn" value="false" />
+        <property name="testWhileIdle" value="true" />
+        <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+        <property name="timeBetweenEvictionRunsMillis" value="60000" />
+        <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+        <property name="minEvictableIdleTimeMillis" value="25200000" />
+        <!-- 打开removeAbandoned功能 -->
+        <property name="removeAbandoned" value="true" />
+        <!-- 1800秒，也就是30分钟 -->
+        <property name="removeAbandonedTimeout" value="1800" />
+        <!-- 关闭abanded连接时输出错误日志 -->
+        <property name="logAbandoned" value="true" />
+        <!-- 监控数据库 -->
+        <!--<property name="filters" value="stat" />-->
+        <!--<property name="filters" value="mergeStat" />-->
+    </bean>
+
+    <!-- mybatis配置 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!-- 映射文件集合 -->
+        <property name="mapperLocations" value="classpath:mapping/*.xml"/>
+    </bean>
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--<property name="annotationClass" value="org.springframework.stereotype.Repository"/>-->
+        <property name="basePackage" value="com.ximalaya.ops.common.web.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 事务配置 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--使用注解方式的事务-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <!-- 对包中的所有类进行扫描，以完成Bean创建和自动依赖注入的功能 -->
+    <context:component-scan base-package="com.ximalaya.ops.common.web">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+    </context:component-scan>
+    <!--启用aop注解支持-->
+    <aop:aspectj-autoproxy/>
+
+    <!-- 使用@value注解 -->
+    <bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:config.properties</value>
+                <value>classpath:rabbit.properties</value>
+                <value>classpath:data-source.properties</value>
+            </list>
+        </property>
+    </bean>
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+        <property name="properties" ref="configProperties"/>
+    </bean>
+
+    <!-- javamelody监控 -->
+    <bean id="facadeMonitoringAdvisor" class="net.bull.javamelody.MonitoringSpringAdvisor">
+        <property name="pointcut">
+            <bean class="org.springframework.aop.support.JdkRegexpMethodPointcut">
+                <property name="patterns">
+                    <array>
+                        <value>com.ximalaya.ops.common.web.dao.*</value>
+                        <value>com.ximalaya.ops.common.web.service.*</value>
+                    </array>
+                </property>
+            </bean>
+        </property>
+    </bean>
+    <import resource="classpath:net/bull/javamelody/monitoring-spring.xml"></import>
+</beans>

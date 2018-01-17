@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--切勿将该文件改名或者移动位置-->
+<mapper namespace="com.ximalaya.ops.common.web.db.ICrudDAO">
+    <select id="getSingleTableCount" resultType="java.lang.Long">
+        select count(*) from `${tableSchema}`.`${tableName}`
+        where 1=1
+        <if test="searchParams!=null">
+            <foreach collection="searchParams" index="index" item="param">
+                <choose>
+                    <when test="param.judgeType=='eq'">
+                        and `${param.columnName}` = #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gt'">
+                        and `${param.columnName}` &gt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gteq'">
+                        and `${param.columnName}` &gt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lt'">
+                        and `${param.columnName}` &lt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lteq'">
+                        and `${param.columnName}` &lt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='like'">
+                        and `${param.columnName}` like concat('%',#{param.inputValue},'%')
+                    </when>
+                    <when test="param.judgeType=='bt'">
+                        and `${param.columnName}` BETWEEN #{param.inputValue.get('begin')} and #{param.inputValue.get('end')}
+                    </when>
+                    <when test="param.judgeType=='in'">
+                        and `${param.columnName}` in
+                        <trim prefix="(" suffix=")" suffixOverrides=",">
+                            <foreach collection="param.inputValue" index="index" item="inParam">
+                                #{inParam},
+                            </foreach>
+                        </trim>
+                    </when>
+                </choose>
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getSingleTableData" resultType="java.util.Map">
+        select
+        <trim suffixOverrides=",">
+            <foreach collection="tableHeads" index="index" item="tableHead">
+                <if test="tableHead!=null and tableHead.field!=null">
+                    `${tableHead.field}`,
+                </if>
+            </foreach>
+        </trim>
+        from
+        `${tableSchema}`.`${tableName}` where 1=1
+        <if test="searchParams!=null">
+            <foreach collection="searchParams" index="index" item="param">
+                <choose>
+                    <when test="param.judgeType=='eq'">
+                        and `${param.columnName}` = #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gt'">
+                        and `${param.columnName}` &gt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gteq'">
+                        and `${param.columnName}` &gt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lt'">
+                        and `${param.columnName}` &lt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lteq'">
+                        and `${param.columnName}` &lt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='like'">
+                        and `${param.columnName}` like concat('%',#{param.inputValue},'%')
+                    </when>
+                    <when test="param.judgeType=='bt'">
+                        and `${param.columnName}` BETWEEN #{param.inputValue.get('begin')} and #{param.inputValue.get('end')}
+                    </when>
+                    <when test="param.judgeType=='in'">
+                        and `${param.columnName}` in
+                        <trim prefix="(" suffix=")" suffixOverrides=",">
+                            <foreach collection="param.inputValue" index="index" item="inParam">
+                                #{inParam},
+                            </foreach>
+                        </trim>
+                    </when>
+                </choose>
+            </foreach>
+        </if>
+        <if test="pagination!=null">
+            <if test="pagination.order!=null and pagination.sort!=null">
+                order by `${pagination.order}` ${pagination.sort}
+            </if>
+            <if test="pagination.order!=null and pagination.sort==null">
+                order by `${pagination.order}` asc
+            </if>
+            <if test="pagination.pageIndex!=null and pagination.pageSize!=null">
+                limit ${pagination.limit},${pagination.pageSize}
+            </if>
+        </if>
+    </select>
+
+    <select id="getDoubleTableCount" resultType="java.lang.Long">
+        select count(*)
+        from `${tableSchema}`.`${mainTableName}` a
+        left join `${tableSchema}`.`${followTableName}` b
+        on a.`${mainPrimaryKey}`=b.`${followTableFKey}`
+        where 1=1
+        <if test="searchParams!=null">
+            <foreach collection="searchParams" index="index" item="param">
+                <choose>
+                    <when test="param.judgeType=='eq'">
+                        and ${param.columnName} = #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gt'">
+                        and ${param.columnName} &gt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gteq'">
+                        and ${param.columnName} &gt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lt'">
+                        and ${param.columnName} &lt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lteq'">
+                        and ${param.columnName} &lt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='like'">
+                        and ${param.columnName} like concat('%',#{param.inputValue},'%')
+                    </when>
+                    <when test="param.judgeType=='bt'">
+                        and ${param.columnName} BETWEEN #{param.inputValue.get('begin')} and #{param.inputValue.get('end')}
+                    </when>
+                    <when test="param.judgeType=='in'">
+                        and ${param.columnName} in
+                        <trim prefix="(" suffix=")" suffixOverrides=",">
+                            <foreach collection="param.inputValue" index="index" item="inParam">
+                                #{inParam},
+                            </foreach>
+                        </trim>
+                    </when>
+                </choose>
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getDoubleTableData" resultType="java.util.Map">
+        select
+        <trim suffixOverrides=",">
+            <foreach collection="tableHeads" index="index" item="tableHead">
+                <if test="tableHead!=null and tableHead.field!=null">
+                    ${tableHead.field} as #{tableHead.field},
+                </if>
+            </foreach>
+        </trim>
+        from `${tableSchema}`.`${mainTableName}` a
+        left join `${tableSchema}`.`${followTableName}` b
+        on a.`${mainPrimaryKey}`=b.`${followTableFKey}`
+        where 1=1
+        <if test="searchParams!=null">
+            <foreach collection="searchParams" index="index" item="param">
+                <choose>
+                    <when test="param.judgeType=='eq'">
+                        and ${param.columnName} = #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gt'">
+                        and ${param.columnName} &gt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='gteq'">
+                        and ${param.columnName} &gt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lt'">
+                        and ${param.columnName} &lt; #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='lteq'">
+                        and ${param.columnName} &lt;= #{param.inputValue}
+                    </when>
+                    <when test="param.judgeType=='like'">
+                        and ${param.columnName} like concat('%',#{param.inputValue},'%')
+                    </when>
+                    <when test="param.judgeType=='bt'">
+                        and ${param.columnName} BETWEEN #{param.inputValue.get('begin')} and #{param.inputValue.get('end')}
+                    </when>
+                    <when test="param.judgeType=='in'">
+                        and ${param.columnName} in
+                        <trim prefix="(" suffix=")" suffixOverrides=",">
+                            <foreach collection="param.inputValue" index="index" item="inParam">
+                                #{inParam},
+                            </foreach>
+                        </trim>
+                    </when>
+                </choose>
+            </foreach>
+        </if>
+        <if test="pagination!=null">
+            <if test="pagination.order!=null and pagination.sort!=null">
+                order by ${pagination.order} ${pagination.sort}
+            </if>
+            <if test="pagination.order!=null and pagination.sort==null">
+                order by ${pagination.order} asc
+            </if>
+            <if test="pagination.pageIndex!=null and pagination.pageSize!=null">
+                limit ${pagination.limit},${pagination.pageSize}
+            </if>
+        </if>
+    </select>
+
+    <select id="getFollowTableData" resultType="java.util.Map">
+        select
+        <trim suffixOverrides=",">
+            <foreach collection="tableHeads" index="index" item="tableHead">
+                <if test="tableHead!=null and tableHead.field!=null">
+                    `${tableHead.field}`,
+                </if>
+            </foreach>
+        </trim>
+        from
+        `${tableSchema}`.`${tableName}` where `${followFKey}`=#{foreignKeyValue}
+        <if test="order!=null">
+            order by `${order}`
+        </if>
+    </select>
+
+    <update id="updatePosition">
+        update `${tableSchema}`.`${tableName}`
+        set `${order}` = case `${primaryKey}`
+        <foreach collection="params" item="item">
+            when #{item.primaryKey} then #{item.order}
+        </foreach>
+        END
+        where `${primaryKey}` IN
+        <foreach collection="params" item="item" separator="," open="(" close=")">
+            #{item.primaryKey}
+        </foreach>
+    </update>
+
+    <insert id="insertMain" useGeneratedKeys="true" keyProperty="primaryKeyValue"
+            parameterType="com.ximalaya.ops.common.web.model.param.MainParam">
+        insert into `${tableSchema}`.`${mainTableName}`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="main" item="item">
+                `${item.columnName}`,
+            </foreach>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="main" item="item">
+                #{item.inputValue},
+            </foreach>
+        </trim>
+    </insert>
+
+    <insert id="insertFollow" useGeneratedKeys="true" keyProperty="followTablePKeyValue"
+            parameterType="com.ximalaya.ops.common.web.model.param.MainParam">
+        insert into `${tableSchema}`.`${followTableName}`
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="follow" item="item">
+                `${item.columnName}`,
+            </foreach>
+        </trim>
+        values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <foreach collection="follow" item="item">
+                #{item.inputValue},
+            </foreach>
+        </trim>
+    </insert>
+
+    <select id="getMaxPosition" resultType="java.lang.Object">
+        select max(`${order}`)
+        from `${tableSchema}`.`${tableName}`
+        where `${foreignKey}`=#{foreignKeyValue}
+    </select>
+    
+    <select id="getMainMaxPosition" resultType="java.lang.Object">
+        select max(`${order}`)
+        from `${tableSchema}`.`${tableName}`
+    </select>
+
+    <select id="selectSingleInfo" resultType="java.util.Map">
+        select
+        <trim suffixOverrides=",">
+            <foreach collection="columns" index="index" item="column">
+                <if test="column!=null">
+                    `${column}`,
+                </if>
+            </foreach>
+        </trim>
+        from `${tableSchema}`.`${tableName}`
+        where `${primaryKey}`=#{primaryKeyValue}
+    </select>
+
+    <select id="selectDoubleInfo" resultType="java.util.Map">
+        select
+        <trim suffixOverrides=",">
+            <foreach collection="columns" index="index" item="column">
+                <if test="column!=null">
+                    ${column} as #{column},
+                </if>
+            </foreach>
+        </trim>
+        from `${tableSchema}`.`${mainTableName}` a
+        left join `${tableSchema}`.`${followTableName}` b
+        on a.`${primaryKey}`=b.`${followTableFKey}`
+        where a.`${primaryKey}`=#{primaryKeyValue}
+    </select>
+
+    <update id="update">
+        update `${tableSchema}`.`${tableName}`
+        <trim prefix="SET" suffixOverrides=",">
+            <foreach collection="params" index="index" item="param">
+                `${param.columnName}`=#{param.inputValue},
+            </foreach>
+        </trim>
+        where `${primaryKey}`=#{primaryKeyValue}
+    </update>
+
+    <delete id="delete">
+        delete from `${tableSchema}`.`${tableName}`
+        where `${key}`=#{keyValue}
+    </delete>
+
+    <select id="getPkAfterDelete" resultType="java.lang.Object">
+        select `${primaryKey}`
+        from `${tableSchema}`.`${tableName}`
+        where `${foreignKey}`=#{foreignKeyValue}
+        order by `${order}`
+    </select>
+
+    <select id="getDataSource" resultType="java.util.Map">
+        select `${key}` as k,`${value}` as v
+        from `${tableSchema}`.`${tableName}`
+    </select>
+</mapper>
