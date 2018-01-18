@@ -2,18 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ximalaya.ops.common.web.dao.IMetaConfigDAO">
     <select id="selectByName" resultType="com.ximalaya.ops.common.web.model.po.MetaConfigPO">
-        SELECT * FROM `ops`.`common__meta_config` WHERE `name`= #{name}
+        SELECT * FROM `ops`.`common_meta_config` WHERE `name`= #{name}
     </select>
     <insert id="insert" keyProperty="id" useGeneratedKeys="true"
             parameterType="com.ximalaya.ops.common.web.model.po.MetaConfigPO">
-        INSERT INTO `ops`.`common__meta_config` (id, connect_id, `name`, `schema_name`, `table_name`, config_json,
+        INSERT INTO `ops`.`common_meta_config` (id, connect_id, `name`, `schema_name`, `table_name`, config_json,
         created_at, updated_at)
         VALUE
         (#{id}, #{connectId}, #{name}, #{schemaName}, #{tableName}, #{configJson},
         now(), now())
     </insert>
     <update id="updateById" parameterType="com.ximalaya.ops.common.web.model.po.MetaConfigPO">
-        UPDATE `ops`.`common__meta_config`
+        UPDATE `ops`.`common_meta_config`
         <trim prefix="SET" suffixOverrides=",">
             <if test="connectId != null">
                 `connect_id` = #{connectId},

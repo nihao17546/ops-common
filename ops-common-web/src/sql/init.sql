@@ -11,7 +11,7 @@ CREATE TABLE `ops`.`common_db_connect` (
   UNIQUE KEY `uni_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='数据库连接配置';
 
-CREATE TABLE `ops`.`common__meta_config` (
+CREATE TABLE `ops`.`common_meta_config` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `connect_id` bigint(20) NOT NULL COMMENT '数据库连接id,关联common__db_connect#id',
   `name` varchar(128) COLLATE utf8_unicode_ci NOT NULL DEFAULT '' COMMENT '配置名称',
@@ -24,7 +24,7 @@ CREATE TABLE `ops`.`common__meta_config` (
   UNIQUE KEY `uni_name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='项目元配置';
 
-CREATE TABLE `ops`.`common__column_config` (
+CREATE TABLE `ops`.`common_column_config` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `meta_id` bigint(20) NOT NULL COMMENT '项目元配置id,关联common__meta_config#id',
   `schema_name` varchar(32) COLLATE utf8_unicode_ci NOT NULL COMMENT '该字段所在schema名字',

@@ -25,7 +25,7 @@
                 <a class="btn btn-primary btn-lg" href="/ops-common-web/config/table">表信息配置</a>
             </div>
             <div class="col-sm-6 col-xs-6" style="text-align: center;">
-                <a class="btn btn-primary btn-lg" href="#"> 字段信息配置</a>
+                <a class="btn btn-primary btn-lg" href="/ops-common-web/config/column"> 字段信息配置</a>
             </div>
         </div>
     </div>

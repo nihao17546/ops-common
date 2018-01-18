@@ -12,6 +12,7 @@ import com.ximalaya.ops.common.web.model.po.DbConnectPO;
 import com.ximalaya.ops.common.web.model.po.MetaConfigPO;
 import com.ximalaya.ops.common.web.model.po.TableInfoPO;
 import com.ximalaya.ops.common.web.model.vo.DbConnectVO;
+import com.ximalaya.ops.common.web.model.vo.MetaConfigVO;
 import com.ximalaya.ops.common.web.service.IConfigService;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -143,5 +144,21 @@ public class ConfigServiceImpl implements IConfigService {
         configTableParam.setTableName(metaConfigPO.getTableName());
         configTableParam.setComment(JSON.parseObject(metaConfigPO.getConfigJson(), MetaComment.class));
         return configTableParam;
+    }
+
+    @Override
+    public MetaConfigVO getMetaConfigByName(String metaName) throws CommonException{
+        MetaConfigPO metaConfigPO = metaConfigDAO.selectByName(metaName);
+        if(metaConfigPO == null){
+            throw new CommonException("配置名不存在");
+        }
+        MetaConfigVO vo = new MetaConfigVO();
+        vo.setId(metaConfigPO.getId());
+        vo.setName(metaConfigPO.getName());
+        vo.setConnectId(metaConfigPO.getConnectId());
+        vo.setSchemaName(metaConfigPO.getSchemaName());
+        vo.setTableName(metaConfigPO.getTableName());
+        vo.setConfigJson(metaConfigPO.getConfigJson());
+        return vo;
     }
 }
