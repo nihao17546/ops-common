@@ -51,10 +51,10 @@
         </div>
         <div class="clearfix" style="display: none;padding: 15px;" id="config-main">
             <button class="btn btn-primary btn-sm" onclick="getMainTable()">获取主表结构</button>&nbsp;&nbsp;
-            主表:<span id="mainTableSpan"></span>&nbsp;<button id="reloadMain" class="btn btn-warning btn-xs">表结构重置</button><br><br>
+            主表:<span id="mainTableSpan"></span>&nbsp;<button onclick="reloadMain()" class="btn btn-warning btn-xs">表结构重置</button><br><br>
             <div id="follow-div" style="display: none;">
                 <button class="btn btn-primary btn-sm" onclick="getFollowTable()">获取从表结构</button>&nbsp;&nbsp;
-                从表:<span id="followTableSpan"></span>&nbsp;<button id="reloadFollow" class="btn btn-warning btn-xs">表结构重置</button>
+                从表:<span id="followTableSpan"></span>&nbsp;<button onclick="reloadFollow()" class="btn btn-warning btn-xs">表结构重置</button>
             </div>
             <input type="text" name="schema" id="schema" style="display: none;">
             <input type="text" name="schema" id="mainTableName" style="display: none;">
@@ -389,7 +389,7 @@
                     </form>
                 </div>
                 <div class="btn-save">
-                    <a type="button" class="btn btn-default btn-sm" onclick="cancell()">取消</a>
+                    <a type="button" class="btn btn-default btn-sm" onclick="cancel()">取消</a>
                     <button class="btn btn-primary btn-sm" id="savePages">保存</button>
                 </div>
             </div>
@@ -669,7 +669,7 @@
         $('.add').remove();
         $.ajax({
             type:'post',
-            url:'/ops-common-web/getTable',
+            url:'/ops-common-web/config/getTable',
             dataType:'json',
             data:{
                 schema:schema,
@@ -702,7 +702,7 @@
                                 'column_key="'+list[i].cOLUMN_KEY+'" ' +
                                 'column_type="'+list[i].cOLUMN_TYPE+'" ' +
                                 'table_name="'+tableName+'"' +
-                                'onclick="caozuo(this)">设置</button></td>' +
+                                'onclick="handle(this)">设置</button></td>' +
                                 '</tr>';
                     }
                     table.append(app);
@@ -744,6 +744,122 @@
         if(schema!=''&&tableName!=''&&metaId!=''){
             getTable(metaId,schema,tableName,'follow');
         }
+    }
+
+    function reloadMain() {
+        var schema=$.trim($('#schema').val());
+        var tableName=$.trim($('#mainTableName').val());
+        var metaId = $("#meta_id").val();
+        var fun = function () {
+            $('#getMainTable').trigger("click");
+        }
+        reloadColumn(metaId,schema,tableName,fun());
+    }
+
+    function reloadColumn(metaId,schema,tableName,fun) {
+        $.ajax({
+            type : 'post',
+            url : '/ops-common-web//config/reloadTable',
+            data : {
+                metaId:metaId,
+                schema:schema,
+                tableName:tableName
+            },
+            dataType : 'json',
+            success : function (data) {
+                if(data.code==200){
+                    var list=data.data;
+                    if(list.length==0) {
+                        notify.info("操作成功。");
+                    }
+                    else {
+                        notify.info("操作成功。删除字段:"+list.join(",")+"。");
+                    }
+                    fun();
+                }
+                else{
+                    notify.error(data.message);
+                }
+            },
+            error : function(errorThrown) {
+                notify.error("操作失败:"+errorThrown.status+" "+errorThrown.statusText);
+            }
+        });
+    }
+
+    function reloadFollow() {
+        var schema=$.trim($('#schema').val());
+        var tableName=$.trim($('#followTableName').val());
+        var metaId = $("#meta_id").val();
+        var fun = function () {
+            $('#getFollowTable').trigger("click");
+        }
+        reloadColumn(metaId,schema,tableName,fun());
+    }
+    
+    function handle(o) {
+        table.hide();
+        var column_key = $(o).attr('column_key');
+        var column_name = $(o).attr('column_name');
+        var column_type = $(o).attr('column_type');
+        var table_schema = $.trim($('#schema').val());
+        var table_name = $(o).attr('table_name');
+        $('#tableSchema').val(table_schema);
+        $('#tableName').val(table_name);
+        $('#columnName').val(column_name);
+        $('#col-type').val(column_type);
+        if(column_key=='PRI'){
+            $('#columnType').find("option[value='pk']").attr("selected",true).change();
+            $('#columnType').attr("disabled",true);
+        }
+        form.show();
+    }
+    
+    function cancel() {
+        form.hide();
+        table.show();
+        form.html(formHtml);
+        init();
+    }
+    
+    function reset(o) {
+        if(!confirm("确定要重置字段:"+$(o).attr('column_name'))){
+            return;
+        }
+        var postObj={};
+        postObj.comment="";
+        postObj.schema=$.trim($('#schema').val());
+        postObj.tableName=$(o).attr('table_name');
+        postObj.columnName=$(o).attr('column_name');
+        postObj.metaId=$("#meta_id").val();
+        $.ajax({
+            type : 'post',
+            url : '/ops-common-web/config/updateComment',
+            data : JSON.stringify(postObj),
+            contentType:'application/json',
+            dataType : 'json',
+            success : function (data) {
+                if(data.code==200){
+                    notify.info("操作成功");
+                    var type=$('#table-name-show').attr('table');
+                    if(type=='main'){
+                        $('#getMainTable').click();
+                    }
+                    else if(type=='follow'){
+                        $('#getFollowTable').click();
+                    }
+                    else{
+                        alert("div table-name-show attr table is empty");
+                    }
+                }
+                else{
+                    notify.error(data.message);
+                }
+            },
+            error : function(errorThrown) {
+                notify.error("操作失败:"+errorThrown.status+" "+errorThrown.statusText);
+            }
+        })
     }
 </script>
 </body>
