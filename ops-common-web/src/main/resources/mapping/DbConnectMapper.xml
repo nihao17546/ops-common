@@ -7,4 +7,9 @@
     <select id="getById" resultType="com.ximalaya.ops.common.web.model.po.DbConnectPO">
         SELECT * from `ops`.`common_db_connect` where id = #{id}
     </select>
+    <select id="getByMetaId" resultType="com.ximalaya.ops.common.web.model.po.DbConnectPO">
+        SELECT db.* FROM ops.common_db_connect db
+        INNER JOIN ops.common_meta_config meta ON db.id = meta.connect_id
+        WHERE meta.id=#{mataId}
+    </select>
 </mapper>

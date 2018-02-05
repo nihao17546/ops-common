@@ -6,14 +6,17 @@ import com.ximalaya.ops.common.web.dao.IMetaConfigDAO;
 import com.ximalaya.ops.common.web.db.dao.MysqlMetaDataDAO;
 import com.ximalaya.ops.common.web.exception.CommonException;
 import com.ximalaya.ops.common.web.model.db.meta.MetaComment;
+import com.ximalaya.ops.common.web.model.enums.ColumnTypeEnum;
 import com.ximalaya.ops.common.web.model.param.ConfigTableParam;
 import com.ximalaya.ops.common.web.model.po.ColumnInfoPO;
 import com.ximalaya.ops.common.web.model.po.DbConnectPO;
 import com.ximalaya.ops.common.web.model.po.MetaConfigPO;
 import com.ximalaya.ops.common.web.model.po.TableInfoPO;
+import com.ximalaya.ops.common.web.model.result.JsonResult;
 import com.ximalaya.ops.common.web.model.vo.DbConnectVO;
 import com.ximalaya.ops.common.web.model.vo.MetaConfigVO;
 import com.ximalaya.ops.common.web.service.IConfigService;
+import com.ximalaya.ops.common.web.util.StaticUtil;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -160,5 +164,26 @@ public class ConfigServiceImpl implements IConfigService {
         vo.setTableName(metaConfigPO.getTableName());
         vo.setConfigJson(metaConfigPO.getConfigJson());
         return vo;
+    }
+
+    @Override
+    public JsonResult getTable(Long metaId, String schema, String table) throws CommonException {
+        DbConnectPO dbConnectPO = dbConnectDAO.getByMetaId(metaId);
+        MetaConfigPO metaConfigPO = metaConfigDAO.selectById(metaId);
+        TableInfoPO tableInfoPO = mysqlMetaDataDAO.getTableComment(dbConnectPO, schema, table);
+        if(tableInfoPO == null){
+            return JsonResult.fail("未找到表:"+schema+"."+table);
+        }
+        Map<String,String> sqlMap = mysqlMetaDataDAO.showTable(dbConnectPO, schema, table);
+        String primaryKey = StaticUtil.getPrimaryKey(sqlMap.get("Create Table"));
+        List<ColumnInfoPO> columnInfoPOList = mysqlMetaDataDAO.getColumInfoPOsWithFilledComment(dbConnectPO, metaId, schema, table);
+        for(ColumnInfoPO columnInfoPO : columnInfoPOList){
+            if(columnInfoPO.getCOLUMN_NAME().toUpperCase().equalsIgnoreCase(primaryKey))
+                columnInfoPO.setCOLUMN_KEY("PRI");
+            else
+                columnInfoPO.setCOLUMN_KEY("");
+        }
+        return JsonResult.success().pull("tableColumn", columnInfoPOList)
+                .pull("tableComment",(metaConfigPO==null || metaConfigPO.getConfigJson()==null)?"":metaConfigPO.getConfigJson());
     }
 }

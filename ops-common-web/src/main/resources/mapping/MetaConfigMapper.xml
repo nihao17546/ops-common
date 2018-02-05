@@ -34,4 +34,8 @@
         </trim>
         WHERE id = #{id}
     </update>
+    <select id="selectById" resultType="com.ximalaya.ops.common.web.model.po.MetaConfigPO">
+        SELECT * FROM ops.common_meta_config
+        WHERE id = #{id}
+    </select>
 </mapper>

@@ -11,4 +11,5 @@ import java.util.List;
 public interface IDbConnectDAO {
     List<DbConnectPO> selectAll();
     DbConnectPO getById(@Param("id") Long id);
+    DbConnectPO getByMetaId(@Param("mataId") Long mataId);
 }

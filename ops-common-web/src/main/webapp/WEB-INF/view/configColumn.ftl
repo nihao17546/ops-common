@@ -46,7 +46,7 @@
         <div class="s-wrapper">
             配置名称:<input type="text" name="metaName" id="meta_name" class="input-sm" placeholder="请输入配置名称">&nbsp;&nbsp;
             <button class="btn btn-primary btn-sm" onclick="start()">开始进行配置</button>&nbsp;
-            <a type="button" class="btn btn-default btn-sm" href="/ops-common-web/config">返回</a>
+            <a type="button" class="btn btn-default btn-sm" href="/ops-common-web/config/index">返回</a>
             <span style="color: red" id="config-hit"></span>
         </div>
         <div class="clearfix" style="display: none;padding: 15px;" id="config-main">
@@ -678,7 +678,7 @@
             },
             success:function (data) {
                 if(data.code==200){
-                    var list=data.data.tableColumn;
+                    var list=data.tableColumn;
                     var app;
                     for(var i=0;i<list.length;i++){
                         var COLUMN_DEFAULT="[null]",COLUMN_COMMENT="";
@@ -759,7 +759,7 @@
     function reloadColumn(metaId,schema,tableName,fun) {
         $.ajax({
             type : 'post',
-            url : '/ops-common-web//config/reloadTable',
+            url : '/ops-common-web/config/reloadTable',
             data : {
                 metaId:metaId,
                 schema:schema,

@@ -10,4 +10,5 @@ public interface IMetaConfigDAO {
     MetaConfigPO selectByName(@Param("name") String name);
     int insert(MetaConfigPO metaConfigPO);
     int updateById(MetaConfigPO metaConfigPO);
+    MetaConfigPO selectById(@Param("id") Long id);
 }

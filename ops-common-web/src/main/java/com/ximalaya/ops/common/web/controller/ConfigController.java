@@ -2,6 +2,7 @@ package com.ximalaya.ops.common.web.controller;
 
 import com.ximalaya.ops.common.web.exception.CommonException;
 import com.ximalaya.ops.common.web.model.param.ConfigTableParam;
+import com.ximalaya.ops.common.web.model.result.JsonResult;
 import com.ximalaya.ops.common.web.model.vo.DbConnectVO;
 import com.ximalaya.ops.common.web.model.vo.MetaConfigVO;
 import com.ximalaya.ops.common.web.service.IConfigService;
@@ -95,6 +96,17 @@ public class ConfigController extends BaseController {
         metaConfigVO.setUrl(requestUrlWithOutServlet + "/" +
                 DesUtil.encrypt(metaConfigVO.getId().toString()) + "/index");
         return ok().pull("meta", metaConfigVO).json();
+    }
+
+    @RequestMapping("/getTable")
+    @ResponseBody
+    public String getTable(Long metaId, String schema, String table){
+        try {
+            JsonResult jsonResult = configService.getTable(metaId, schema, table);
+            return jsonResult.json();
+        } catch (CommonException e) {
+            return fail(e.getMessage()).json();
+        }
     }
 
 }
