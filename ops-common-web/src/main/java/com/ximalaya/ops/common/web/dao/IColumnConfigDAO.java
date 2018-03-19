@@ -12,4 +12,5 @@ public interface IColumnConfigDAO {
     List<ColumnConfigPO> getListByMetaIdAndSchemaAndTable(@Param("metaId") Long metaId,
                                           @Param("schema") String schema,
                                           @Param("table") String table);
+    void insertOrUpdateByMetaIdSchemaTableColumn(ColumnConfigPO po);
 }

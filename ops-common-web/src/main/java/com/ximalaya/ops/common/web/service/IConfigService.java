@@ -1,6 +1,7 @@
 package com.ximalaya.ops.common.web.service;
 
 import com.ximalaya.ops.common.web.exception.CommonException;
+import com.ximalaya.ops.common.web.model.param.ConfigColumnParam;
 import com.ximalaya.ops.common.web.model.param.ConfigTableParam;
 import com.ximalaya.ops.common.web.model.result.JsonResult;
 import com.ximalaya.ops.common.web.model.vo.DbConnectVO;
@@ -36,4 +37,6 @@ public interface IConfigService {
     MetaConfigVO getMetaConfigByName(String metaName) throws CommonException;
 
     JsonResult getTable(Long metaId, String schema, String table) throws CommonException;
+
+    void updateColumnConfig(ConfigColumnParam configColumnParam) throws CommonException;
 }

@@ -1,17 +1,15 @@
 package com.ximalaya.ops.common.web.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.ximalaya.ops.common.web.dao.IColumnConfigDAO;
 import com.ximalaya.ops.common.web.dao.IDbConnectDAO;
 import com.ximalaya.ops.common.web.dao.IMetaConfigDAO;
 import com.ximalaya.ops.common.web.db.dao.MysqlMetaDataDAO;
 import com.ximalaya.ops.common.web.exception.CommonException;
 import com.ximalaya.ops.common.web.model.db.meta.MetaComment;
-import com.ximalaya.ops.common.web.model.enums.ColumnTypeEnum;
+import com.ximalaya.ops.common.web.model.param.ConfigColumnParam;
 import com.ximalaya.ops.common.web.model.param.ConfigTableParam;
-import com.ximalaya.ops.common.web.model.po.ColumnInfoPO;
-import com.ximalaya.ops.common.web.model.po.DbConnectPO;
-import com.ximalaya.ops.common.web.model.po.MetaConfigPO;
-import com.ximalaya.ops.common.web.model.po.TableInfoPO;
+import com.ximalaya.ops.common.web.model.po.*;
 import com.ximalaya.ops.common.web.model.result.JsonResult;
 import com.ximalaya.ops.common.web.model.vo.DbConnectVO;
 import com.ximalaya.ops.common.web.model.vo.MetaConfigVO;
@@ -40,6 +38,8 @@ public class ConfigServiceImpl implements IConfigService {
     private IMetaConfigDAO metaConfigDAO;
     @Resource
     private MysqlMetaDataDAO mysqlMetaDataDAO;
+    @Resource
+    private IColumnConfigDAO columnConfigDAO;
 
     @Override
     public List<DbConnectVO> getAllConnect() {
@@ -185,5 +185,41 @@ public class ConfigServiceImpl implements IConfigService {
         }
         return JsonResult.success().pull("tableColumn", columnInfoPOList)
                 .pull("tableComment",(metaConfigPO==null || metaConfigPO.getConfigJson()==null)?"":metaConfigPO.getConfigJson());
+    }
+
+    @Override
+    public void updateColumnConfig(ConfigColumnParam configColumnParam) throws CommonException {
+        // 首先获取到要修改字段的原始类型
+        DbConnectPO dbConnectPO = dbConnectDAO.getByMetaId(configColumnParam.getMetaId());
+        MetaConfigPO metaConfigPO = metaConfigDAO.selectById(configColumnParam.getMetaId());
+        List<ColumnInfoPO> columnInfoPOList = mysqlMetaDataDAO.getTableInfo(dbConnectPO, configColumnParam.getSchema(), configColumnParam.getTableName());
+        ColumnInfoPO columnInfoPO = null;
+        for(ColumnInfoPO infoPO : columnInfoPOList){
+            if (configColumnParam.getColumnName().equals(infoPO.getCOLUMN_NAME())) {
+                columnInfoPO = infoPO;
+                break;
+            }
+        }
+        if(columnInfoPO == null){
+            throw new RuntimeException(String.format("can't find column [%s] in table [%s] schema [%s]",
+                    configColumnParam.getColumnName(), configColumnParam.getTableName(), configColumnParam.getSchema()));
+        }
+
+        ColumnConfigPO columnConfigPO = new ColumnConfigPO();
+        columnConfigPO.setMetaId(metaConfigPO.getId());
+        columnConfigPO.setSchemaName(configColumnParam.getSchema());
+        columnConfigPO.setTableName(configColumnParam.getTableName());
+        columnConfigPO.setColumnName(configColumnParam.getColumnName());
+        columnConfigPO.setDataType(columnInfoPO.getDATA_TYPE());
+        columnConfigPO.setColumnType(columnInfoPO.getCOLUMN_TYPE());
+        if(configColumnParam.getComment() == null){
+            columnConfigPO.setConfigJson("");
+        }
+        else{
+            //对正则表达式进行编码
+            StaticUtil.encodeRegular(configColumnParam.getComment().getSave());
+            columnConfigPO.setConfigJson(JSON.toJSONString(configColumnParam.getComment()));
+        }
+        columnConfigDAO.insertOrUpdateByMetaIdSchemaTableColumn(columnConfigPO);
     }
 }

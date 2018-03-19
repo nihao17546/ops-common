@@ -1,6 +1,7 @@
 package com.ximalaya.ops.common.web.controller;
 
 import com.ximalaya.ops.common.web.exception.CommonException;
+import com.ximalaya.ops.common.web.model.param.ConfigColumnParam;
 import com.ximalaya.ops.common.web.model.param.ConfigTableParam;
 import com.ximalaya.ops.common.web.model.result.JsonResult;
 import com.ximalaya.ops.common.web.model.vo.DbConnectVO;
@@ -107,6 +108,17 @@ public class ConfigController extends BaseController {
         } catch (CommonException e) {
             return fail(e.getMessage()).json();
         }
+    }
+
+    @RequestMapping("/updateComment")
+    @ResponseBody
+    public String updateComment(@RequestBody ConfigColumnParam configColumnParam){
+        try {
+            configService.updateColumnConfig(configColumnParam);
+        } catch (CommonException e) {
+            return fail(e.getMessage()).json();
+        }
+        return ok("操作成功").json();
     }
 
 }

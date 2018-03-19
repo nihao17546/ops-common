@@ -390,7 +390,7 @@
                 </div>
                 <div class="btn-save">
                     <a type="button" class="btn btn-default btn-sm" onclick="cancel()">取消</a>
-                    <button class="btn btn-primary btn-sm" id="savePages">保存</button>
+                    <button class="btn btn-primary btn-sm" onclick="saveColumnComment()">保存</button>
                 </div>
             </div>
         </div>
@@ -847,6 +847,284 @@
                     }
                     else if(type=='follow'){
                         $('#getFollowTable').click();
+                    }
+                    else{
+                        alert("div table-name-show attr table is empty");
+                    }
+                }
+                else{
+                    notify.error(data.message);
+                }
+            },
+            error : function(errorThrown) {
+                notify.error("操作失败:"+errorThrown.status+" "+errorThrown.statusText);
+            }
+        })
+    }
+
+    function saveColumnComment() {
+        var postData={};
+        var lableName=$.trim($('#lableName').val());
+        if(lableName==''){
+            notify.warn('请填写字段名称');
+            return;
+        }
+        postData.lableName=lableName;
+        var formatter={};
+        if($('#formatter').is(':checked')){
+            var formatterType=$('#formatterType').val();
+            if(formatterType=='text'){
+                formatter.type='text';
+                var dataSource=$('#dataSource').val();
+                if(dataSource=='local'){
+                    var maps=$('#dataSource-div-local').find('.list-formatter-map-add');
+                    if(maps.length==0){
+                        notify.warn("请填写过滤参数");
+                        return;
+                    }
+                    var map={};
+                    var col_type=$('#col-type').val();
+                    for(var i=0;i<maps.length;i++){
+                        var key=$.trim($(maps[i]).children().eq(0).val());
+                        var value=$.trim($(maps[i]).children().eq(1).val());
+                        if(key==''){
+                            notify.warn("过滤参数key不能为空");
+                            return;
+                        }
+                        if(value==''){
+                            notify.warn("过滤参数value不能为空");
+                            return;
+                        }
+                        if(col_type=='tinyint(1)'){
+                            if(key!='1'&&key!='0'){
+                                notify.warn("字段类型为tinyint(1)时,过滤参数key只能是0或1");
+                                return;
+                            }
+                        }
+                        map[key]=value;
+                    }
+                    formatter.map=map;
+                }
+                else if(dataSource=='database'){
+                    var dataSource={};
+                    var dataSourceSchema =$.trim($('#dataSourceSchema').val());
+                    if(dataSourceSchema==''){
+                        notify.warn('请输入数据源表所在schema');
+                        return;
+                    }
+                    dataSource.schema=dataSourceSchema;
+                    var dataSourceTN=$.trim($('#dataSourceTableName').val());
+                    if(dataSourceTN==''){
+                        notify.warn('请输入数据源表名');
+                        return;
+                    }
+                    dataSource.tableName=dataSourceTN;
+                    var dataSourceK=$.trim($('#key').val());
+                    if(dataSourceK==''){
+                        notify.warn('请输入数据源key');
+                        return;
+                    }
+                    dataSource.key=dataSourceK;
+                    var dataSourceV=$.trim($('#value').val());
+                    if(dataSourceV==''){
+                        notify.warn('请输入数据源value');
+                        return;
+                    }
+                    dataSource.value=dataSourceV;
+                    dataSource.connectId=$("#connect_id").val();
+                    formatter.dataSource=dataSource;
+                }
+            }
+            else if(formatterType=='pic'){
+                formatter.type='pic';
+            }
+        }
+
+        if($('#list').is(':checked')){
+            var list={};
+            var width=$.trim($('#width').val());
+            if(width!=''){
+                var widthInt=parseInt(width);
+                if(widthInt){
+                    list.width=widthInt;
+                }
+                else{
+                    notify.warn("列宽格式错误,请输入正整数");
+                    return;
+                }
+            }
+            list.align=$('#align').val();
+            list.valign=$('#valign').val();
+            var sortable=$('#sortable').val();
+            if(sortable=='true'){
+                list.sortable=true;
+            }
+            else{
+                list.sortable=false;
+            }
+            if(formatter&&formatter.type){
+                if(formatter.type=='pic'){
+                    list.formatter=formatter;
+                }
+                else if(formatter.type=='text'){
+                    if($('#col-type').val()=='tinyint(1)'&&formatter.map){
+                        var forma={
+                            type:'text',
+                            map:{}
+                        };
+                        for(var k in formatter.map){
+                            if(k=='1'){
+                                forma['map']['true']=formatter.map[k];
+                            }
+                            else{
+                                forma['map']['false']=formatter.map[k];
+                            }
+                        }
+                        list.formatter=forma;
+                    }
+                    else{
+                        list.formatter=formatter;
+                    }
+                }
+            }
+            if($('#extend').is(':checked')){
+                var extendSource=$('#extendSource').val();
+                list.extendSource=extendSource;
+                var extendColumns=[];
+                $('.extendColumns:checked').each(function(){
+                    extendColumns.push($(this).val());
+                });
+                list.extendColumns=extendColumns;
+            }
+            postData.list=list;
+        }
+
+        if($('#search').is(':checked')){
+            var search={};
+            var inputType=$('#search-inputType').val();
+            search.inputType=inputType;
+            if(inputType=='select'){
+                if(formatter&&formatter.type&&formatter.type=='text'){
+                    if(formatter.map){
+                        search.selectContent=formatter.map;
+                    }
+                    else if(formatter.dataSource){
+                        search.dataSource=formatter.dataSource;
+                    }
+                }
+                else{
+                    notify.warn("当搜索input标签类型为下拉菜单时,必须配置过滤参数");
+                    return;
+                }
+            }
+            var judgeType=$('#judgeType').val();
+            search.judgeType=judgeType;
+            postData.search=search;
+        }
+
+        if($('#save').is(':checked')){
+            var save={};
+            save.columnType=$('#columnType').val();
+            var inputType=$('#save-inputType').val();
+            save.inputType=inputType;
+            if(save.columnType=='com'){
+                if(save.inputType=='select'||save.inputType=='radio'){
+                    if(formatter&&formatter.type&&formatter.type=='text'){
+                        if(formatter.map){
+                            save.selectContent=formatter.map;
+                        }
+                        else if(formatter.dataSource){
+                            save.dataSource=formatter.dataSource;
+                        }
+                    }
+                    else{
+                        notify.warn("当新增input标签类型为下拉菜单或单选框时,必须配置过滤参数");
+                        return;
+                    }
+                }
+                else if(save.inputType=='pic'){
+                    var postDataPic={};
+                    var inputs=$('#save-pic-div').find("[data-name]");
+                    for(var i=0;i<inputs.length;i++){
+                        var key=$(inputs[i]).attr('data-name'),value=$.trim($(inputs[i]).val());
+                        if($(inputs[i]).attr('required')){
+                            if(!value){
+                                var tip=$(inputs[i]).attr('tips');
+                                notify.warn(tip);
+                                return;
+                            }
+                        }
+                        if(value){
+                            postDataPic[key]=value;
+                        }
+                    }
+                    var supportImage=[];
+                    $('input[name="supportImage"]:checked').each(function(){
+                        supportImage.push($(this).val());
+                    });
+                    if(supportImage.length==0){
+                        notify.warn("请选择上传图片类型");
+                        return;
+                    }
+                    postDataPic.supportImage=supportImage;
+                    save.picUploadConf=postDataPic;
+                }
+                else if(save.inputType=='text'){
+                    var regular=$('#regular').val();
+                    if(regular=='other'){
+                        var express=$.trim($('#express').val());
+                        if(express==''){
+                            notify.warn("请输入JS正则表达式");
+                            return;
+                        }
+                        save.regular=express;
+                    }
+                    else if(regular!='false'){
+                        save.regular=$('#regular').val();
+                    }
+                }
+                else if(save.inputType=='rich'){
+                    if($('#col-type').val()!='text'){
+                        notify.warn("富文本框,数据库字段类型必须为text");
+                        return;
+                    }
+                }
+            }
+            var tips=$.trim($('#tips').val());
+            if(tips!=''){
+                save.tips=tips;
+            }
+            var edit=$('#edit').val();
+            if(edit=='true'){
+                save.edit=true;
+            }
+            else{
+                save.edit=false;
+            }
+            postData.save=save;
+        }
+
+        var postObj={};
+        postObj.comment=postData;
+        postObj.schema=$('#tableSchema').val();
+        postObj.tableName=$('#tableName').val();
+        postObj.columnName=$('#columnName').val();
+        postObj.metaId=$("#meta_id").val();
+        $.ajax({
+            type : 'post',
+            url : '/ops-common-web/config/updateComment',
+            data : JSON.stringify(postObj),
+            contentType:'application/json',
+            dataType : 'json',
+            success : function (data) {
+                if(data.code==200){
+                    notify.info("操作成功");
+                    var type=$('#table-name-show').attr('table');
+                    if(type=='main'){
+                        getMainTable();
+                    }
+                    else if(type=='follow'){
+                        getFollowTable();
                     }
                     else{
                         alert("div table-name-show attr table is empty");
