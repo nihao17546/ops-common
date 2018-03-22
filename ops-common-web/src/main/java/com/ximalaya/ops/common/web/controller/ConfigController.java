@@ -94,7 +94,7 @@ public class ConfigController extends BaseController {
             String temp = request.getRequestURL().toString();
             requestUrlWithOutServlet = temp.substring(0, temp.indexOf(request.getServletPath()));
         }
-        metaConfigVO.setUrl(requestUrlWithOutServlet + "/" +
+        metaConfigVO.setUrl(requestUrlWithOutServlet + "/web/" +
                 DesUtil.encrypt(metaConfigVO.getId().toString()) + "/index");
         return ok().pull("meta", metaConfigVO).json();
     }
@@ -119,6 +119,13 @@ public class ConfigController extends BaseController {
             return fail(e.getMessage()).json();
         }
         return ok("操作成功").json();
+    }
+
+    @RequestMapping("/reloadTable")
+    @ResponseBody
+    public String reloadTable(Long metaId,String schema,String tableName){
+        List<String> result = configService.reloadTable(metaId,schema,tableName);
+        return ok().pull("data", result).json();
     }
 
 }

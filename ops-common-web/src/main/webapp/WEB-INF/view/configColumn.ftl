@@ -750,10 +750,7 @@
         var schema=$.trim($('#schema').val());
         var tableName=$.trim($('#mainTableName').val());
         var metaId = $("#meta_id").val();
-        var fun = function () {
-            $('#getMainTable').trigger("click");
-        }
-        reloadColumn(metaId,schema,tableName,fun());
+        reloadColumn(metaId,schema,tableName,getMainTable());
     }
 
     function reloadColumn(metaId,schema,tableName,fun) {
@@ -791,10 +788,7 @@
         var schema=$.trim($('#schema').val());
         var tableName=$.trim($('#followTableName').val());
         var metaId = $("#meta_id").val();
-        var fun = function () {
-            $('#getFollowTable').trigger("click");
-        }
-        reloadColumn(metaId,schema,tableName,fun());
+        reloadColumn(metaId,schema,tableName,getFollowTable());
     }
     
     function handle(o) {
@@ -843,10 +837,10 @@
                     notify.info("操作成功");
                     var type=$('#table-name-show').attr('table');
                     if(type=='main'){
-                        $('#getMainTable').click();
+                        getMainTable()
                     }
                     else if(type=='follow'){
-                        $('#getFollowTable').click();
+                        getFollowTable()
                     }
                     else{
                         alert("div table-name-show attr table is empty");

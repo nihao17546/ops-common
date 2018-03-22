@@ -39,4 +39,6 @@ public interface IConfigService {
     JsonResult getTable(Long metaId, String schema, String table) throws CommonException;
 
     void updateColumnConfig(ConfigColumnParam configColumnParam) throws CommonException;
+
+    List<String> reloadTable(Long metaId, String schema, String tableName);
 }

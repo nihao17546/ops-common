@@ -38,4 +38,9 @@
         SELECT * FROM ops.common_meta_config
         WHERE id = #{id}
     </select>
+    <delete id="deleteColumnConfig">
+        delete from ops.common_column_config
+        where schema_name=#{schemaName} and table_name=#{tableName} and column_name=#{columnName}
+        and meta_id=#{metaId}
+    </delete>
 </mapper>

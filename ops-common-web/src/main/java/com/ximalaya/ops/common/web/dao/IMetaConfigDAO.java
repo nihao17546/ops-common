@@ -11,4 +11,8 @@ public interface IMetaConfigDAO {
     int insert(MetaConfigPO metaConfigPO);
     int updateById(MetaConfigPO metaConfigPO);
     MetaConfigPO selectById(@Param("id") Long id);
+    void deleteColumnConfig(@Param("schemaName") String schemaName,
+                            @Param("tableName") String tableName,
+                            @Param("columnName") String columnName,
+                            @Param("metaId") Long metaId);
 }

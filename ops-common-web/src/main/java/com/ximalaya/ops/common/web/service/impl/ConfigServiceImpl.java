@@ -19,8 +19,10 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -221,5 +223,33 @@ public class ConfigServiceImpl implements IConfigService {
             columnConfigPO.setConfigJson(JSON.toJSONString(configColumnParam.getComment()));
         }
         columnConfigDAO.insertOrUpdateByMetaIdSchemaTableColumn(columnConfigPO);
+    }
+
+    @Transactional(rollbackFor=Exception.class)
+    @Override
+    public List<String> reloadTable(Long metaId, String schema, String tableName) {
+        List<String> list = new ArrayList<>();
+        DbConnectPO dbConnectPO = dbConnectDAO.getByMetaId(metaId);
+        //获取表真实字段
+        List<ColumnInfoPO> columnInfoPOList = mysqlMetaDataDAO.getTableInfo(dbConnectPO, schema, tableName);
+        //获取配置字段
+        List<ColumnConfigPO> columnConfigPOs = columnConfigDAO.getListByMetaIdAndSchemaAndTable(metaId, schema, tableName);
+        for(ColumnConfigPO columnConfigPO:columnConfigPOs){
+            boolean b = false;
+            String configColumnName = columnConfigPO.getColumnName();
+            for(ColumnInfoPO columnInfoPO:columnInfoPOList){
+                String realColumnName = columnInfoPO.getCOLUMN_NAME();
+                if(configColumnName.equalsIgnoreCase(realColumnName)){
+                    b = true;
+                    break;
+                }
+            }
+            if(!b){
+                metaConfigDAO.deleteColumnConfig(schema,tableName,configColumnName,metaId);
+                list.add(configColumnName);
+            }
+        }
+
+        return list;
     }
 }
